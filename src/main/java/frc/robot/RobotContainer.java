@@ -8,6 +8,9 @@ import edu.wpi.first.wpilibj.GenericHID;
 import edu.wpi.first.wpilibj.Joystick;
 import edu.wpi.first.wpilibj.XboxController;
 import frc.robot.commands.ArcadeDrive;
+import frc.robot.commands.autos.AutoCustom;
+import frc.robot.commands.autos.AutoDistance;
+import frc.robot.commands.autos.AutoFancy;
 import frc.robot.commands.autos.AutoTime;
 import frc.robot.commands.autos.AutoTimeCurve;
 import frc.robot.subsystems.Drivetrain;
@@ -48,6 +51,9 @@ public class RobotContainer {
     // Setup SmartDashboard options
     autoChooser.setDefaultOption("Auto Routine Time", new AutoTime());
     autoChooser.addOption("Auto Routine Time Curve", new AutoTimeCurve());
+    autoChooser.addOption("Auto Routine Distance", new AutoDistance());
+    autoChooser.addOption("Auto Routine Distance Curve", new AutoFancy());
+    autoChooser.addOption("Auto Routine Custom", new AutoCustom());
 
     // Put the chooser on the dashboard
     SmartDashboard.putData(autoChooser);

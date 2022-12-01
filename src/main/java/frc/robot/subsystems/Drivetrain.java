@@ -69,6 +69,18 @@ public class Drivetrain extends SubsystemBase {
   }
 
   /**
+   * SECTION [2]: The issue with our current commands is that they are very inaccurate built on time and time is terrible. One way
+   * we can make our commands more accurate is by using distance. We can use the encoders on the drivetrain to measure the
+   * the distance the wheels have traveled and use that to drive a certain distance. Usually we do not write all our code ourselves.
+   * We typically rely on libraries built by other people or in our situation code written by our teammates. The subsystem has been built
+   * by another team member here and we can look at the code to see all the things the subsystem can do. All the coded functionality of drivetrain
+   * is in this section. Param refers to what we need to give the method to work like how we needed to give our commands a speed and a time to work.
+   * The return is telling us what we are getting back. If there is no return, the method just does something and if we get something back, we can use
+   * the data given later. Currently look for the best method to use to get the distance traveled by the whole drivetrain and the
+   * best method to drive the robot that we can use later.
+   */
+
+  /**
    * Drives the robot using arcade controls.
    * @param xaxisSpeed The robot's speed along the X axis [-1.0..1.0]. Forward is positive.
    * @param zaxisRotate The robot's rotation rate around the Z axis [-1.0..1.0]. Clockwise is positive.
@@ -183,6 +195,8 @@ public class Drivetrain extends SubsystemBase {
   public void resetGyro() {
     gyro.reset();
   }
+
+  /**!SECTION */
 
   @Override
   public void periodic() {
