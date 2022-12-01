@@ -12,4 +12,7 @@ package frc.robot;
  * <p>It is advised to statically import this class (or one of its inner classes) wherever the
  * constants are needed, to reduce verbosity.
  */
-public final class Constants {}
+public final class Constants {
+    public static final double COUNTS_PER_REV = 1440.0;
+    public static final double WHEEL_DIAMETER_INCH = 2.75591; // 70 mm
+}

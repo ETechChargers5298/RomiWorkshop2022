@@ -4,22 +4,30 @@
 
 package frc.robot.commands;
 
-import edu.wpi.first.wpilibj2.command.CommandBase;
 import frc.robot.subsystems.Drivetrain;
+import edu.wpi.first.wpilibj2.command.CommandBase;
+import java.util.function.Supplier;
 
-// SECTION[epic=Step14]: ARCADE DRIVE COMMAND
-/* NOTE: Create your own command for arcade drive here. Use the tank drive as reference but instead of using drivetrain.tankDrive,
-you will be using drivetrain.arcadeDrive. The first step is to setup all your variables that you will for your whole file. This means
-adding lines for the input under private final Drivetrain drivetrain; Then you want to get the input in the parenthesis of the constructor.
-Then write all your setup code. After that is done, make sure you make sure the robot isn't moving at the start and at the end. In execute,
-drive using controller input. */
 public class ArcadeDrive extends CommandBase {
-
   private final Drivetrain drivetrain;
+  private final Supplier<Double> xaxisSpeedSupplier;
+  private final Supplier<Double> zaxisRotateSupplier;
 
-  public ArcadeDrive() {
-    this.drivetrain = Drivetrain.getInstance();
-    // Use addRequirements() here to declare subsystem dependencies.
+  /**
+   * Creates a new ArcadeDrive. This command will drive your robot according to the speed supplier
+   * lambdas. This command does not terminate.
+   *
+   * @param drivetrain The drivetrain subsystem on which this command will run
+   * @param xaxisSpeedSupplier Lambda supplier of forward/backward speed
+   * @param zaxisRotateSupplier Lambda supplier of rotational speed
+   */
+  public ArcadeDrive(Supplier<Double> xaxisSpeedSupplier, Supplier<Double> zaxisRotateSupplier) {
+    this.xaxisSpeedSupplier = xaxisSpeedSupplier;
+    this.zaxisRotateSupplier = zaxisRotateSupplier;
+    
+    drivetrain = Drivetrain.getInstance();
+
+    addRequirements(drivetrain);
   }
 
   // Called when the command is initially scheduled.
@@ -28,7 +36,9 @@ public class ArcadeDrive extends CommandBase {
 
   // Called every time the scheduler runs while the command is scheduled.
   @Override
-  public void execute() {}
+  public void execute() {
+    drivetrain.arcadeDrive(xaxisSpeedSupplier.get(), zaxisRotateSupplier.get());
+  }
 
   // Called once the command ends or is interrupted.
   @Override
@@ -39,6 +49,4 @@ public class ArcadeDrive extends CommandBase {
   public boolean isFinished() {
     return false;
   }
-
-  // !SECTION
 }

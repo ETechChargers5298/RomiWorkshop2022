@@ -4,76 +4,184 @@
 
 package frc.robot.subsystems;
 
+import edu.wpi.first.wpilibj.BuiltInAccelerometer;
+import edu.wpi.first.wpilibj.Encoder;
 import edu.wpi.first.wpilibj.drive.DifferentialDrive;
+import frc.robot.Constants;
+import frc.robot.sensors.RomiGyro;
 import edu.wpi.first.wpilibj.motorcontrol.Spark;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 
 public class Drivetrain extends SubsystemBase {
-
+  // Instance of the drivetrain
   private static Drivetrain instance;
 
-  // SECTION[epic=Step1]: CREATING A MOTOR
-  /* NOTE: This creates the left motor.
-  To create a motor in code you write...
-  private final <type of motor> <name of motor> = new <type of motor>(<where it is wired>).
-  Make the right motor in this section. */
-  private final Spark leftMotor = new Spark(0);
+  // The motors that drive the wheels
+  private final Spark leftMotor;
+  private final Spark rightMotor;
 
+  // Differential drive object that handles the math for driving the robot
+  private final DifferentialDrive diffDrive;
 
-  // !SECTION
+  // Sensors
+  private final Encoder leftEncoder;
+  private final Encoder rightEncoder;
+  private final RomiGyro gyro;
+  private final BuiltInAccelerometer accel;
 
-  // SECTION[epic=Step13]: CREATING A DIFFERENTIAL DRIVE
-  /* NOTE: There are objects we can create that have tools we can use. One is differential drive which is useful because
-  it has built in methods to do complicated things like arcade drive. To make Differential Drive work, you need to give it the
-  left motor and the right motor in the parenthesis. The code below is almost right, can you fix it to use the rightMotor as well. */
-  private final DifferentialDrive diffDrive = new DifferentialDrive(leftMotor, leftMotor);
+  /** Creates a new Drivetrain. */
+  public Drivetrain() {
+    // Creates the motors
+    leftMotor = new Spark(0);
+    rightMotor = new Spark(1);
 
-  // !SECTION
+    // Inverts the right motor
+    rightMotor.setInverted(true);
 
+    // Creates the differential drive object
+    diffDrive = new DifferentialDrive(leftMotor, rightMotor);
 
-  /** NOTE: This is the constructor, It is where you write all you setup code for this mechanism (Drivetrain) */
-  private Drivetrain() {
-    // SECTION[epic=Step12]: INVERTING MOTOR
-    /* NOTE: To drive forward correctly, one motor always needs to be inverted because they are reflections of each other.
-     * Set the right motor's inversion to true.
-    */
-    leftMotor.setInverted(false);
+    // Sensors are created
+    leftEncoder = new Encoder(4, 5);
+    rightEncoder = new Encoder(6, 7);
+    gyro = new RomiGyro();
+    accel = new BuiltInAccelerometer();
 
-    // !SECTION
+    // Use inches as unit for encoder distances
+    leftEncoder.setDistancePerPulse((Math.PI * Constants.COUNTS_PER_REV) / Constants.WHEEL_DIAMETER_INCH);
+    rightEncoder.setDistancePerPulse((Math.PI * Constants.COUNTS_PER_REV) / Constants.WHEEL_DIAMETER_INCH);
+
+    // Resets the encoders and gyro
+    resetEncoders();
+    resetGyro();
   }
 
-  // SECTION[epic=Step2]: FINISHING TANK DRIVE
-
-  /* NOTE: To give the robot behavior, we need to create methods here to tell the mechanism what to do.
-   * The one below is the method to let the drivetrain use tankDrive. This means if we move the left joystick
-   * it will move the left wheel and if we move the right joystick it will move the right wheel.
-   * You write public void <name of method>(<things you are asking for separated by commas>) {Code Inside Curly Braces}.
-   * Set the speed of the right motor correctly.
+  /**
+   * Returns the instance of the drivetrain.
+   * 
+   * @return The drivetrain instance
    */
-    public void tankDrive(double leftSpeed, double rightSpeed) {
-      // This drives the left motor using leftSpeed
-      leftMotor.set(leftSpeed);
-
-
-    }
-
-    // !SECTION
-
-    // SECTION[epic=Step13]: CREATE ARCADE DRIVE
-    /* NOTE: Arcade drive is where the driver can use one joystick to move forward and backwards. They can use a second joystick
-    to run the robot around. Can you create a brand new method like the one for tankDrive that takes in linearSpeed and rotationSpeed
-    and uses the function diffDrive.arcadeDrive(linearSpeed, rotationSpeed) to drive the robot using arcade drive.   
-    */
-
-
-    // !SECTION
-    
-
   public static Drivetrain getInstance() {
-    if(instance == null) {
-      return new Drivetrain();
+    if (instance == null) {
+      instance = new Drivetrain();
     }
     return instance;
+  }
+
+  /**
+   * Drives the robot using arcade controls.
+   * @param xaxisSpeed The robot's speed along the X axis [-1.0..1.0]. Forward is positive.
+   * @param zaxisRotate The robot's rotation rate around the Z axis [-1.0..1.0]. Clockwise is positive.
+   */
+  public void arcadeDrive(double xaxisSpeed, double zaxisRotate) {
+    diffDrive.arcadeDrive(xaxisSpeed, zaxisRotate);
+  }
+
+  /**
+   * Resets the drive encoders to currently read a position of 0.
+   */
+  public void resetEncoders() {
+    leftEncoder.reset();
+    rightEncoder.reset();
+  }
+
+  /**
+   * Gets the distance driven by the left side of the robot.
+   * @return The distance driven (in counts).
+   */
+  public int getLeftEncoderCount() {
+    return leftEncoder.get();
+  }
+
+  /**
+   * Gets the distance driven by the right side of the robot.
+   * @return The distance driven (in counts).
+   */
+  public int getRightEncoderCount() {
+    return rightEncoder.get();
+  }
+
+  /**
+   * Gets the distance driven by the left side of the robot.
+   * @return The distance driven (in inches).
+   */
+  public double getLeftDistanceInch() {
+    return leftEncoder.getDistance();
+  }
+
+  /**
+   * Gets the distance driven by the right side of the robot.
+   * @return The distance driven (in inches).
+   */
+  public double getRightDistanceInch() {
+    return rightEncoder.getDistance();
+  }
+
+  /**
+   * Gets the distance driven by the average of the left and right sides of the robot.
+   * @return The distance driven (in inches).
+   */
+  public double getAverageDistanceInch() {
+    return (getLeftDistanceInch() + getRightDistanceInch()) / 2.0;
+  }
+
+  /**
+   * The acceleration in the X-axis.
+   *
+   * @return The acceleration of the Romi along the X-axis in Gs
+   */
+  public double getAccelX() {
+    return accel.getX();
+  }
+
+  /**
+   * The acceleration in the Y-axis.
+   *
+   * @return The acceleration of the Romi along the Y-axis in Gs
+   */
+  public double getAccelY() {
+    return accel.getY();
+  }
+
+  /**
+   * The acceleration in the Z-axis.
+   *
+   * @return The acceleration of the Romi along the Z-axis in Gs
+   */
+  public double getAccelZ() {
+    return accel.getZ();
+  }
+
+  /**
+   * Current angle of the Romi around the X-axis.
+   *
+   * @return The current angle of the Romi in degrees
+   */
+  public double getGyroAngleX() {
+    return gyro.getAngleX();
+  }
+
+  /**
+   * Current angle of the Romi around the Y-axis.
+   *
+   * @return The current angle of the Romi in degrees
+   */
+  public double getGyroAngleY() {
+    return gyro.getAngleY();
+  }
+
+  /**
+   * Current angle of the Romi around the Z-axis.
+   *
+   * @return The current angle of the Romi in degrees
+   */
+  public double getGyroAngleZ() {
+    return gyro.getAngleZ();
+  }
+
+  /** Reset the gyro to angle 0. */
+  public void resetGyro() {
+    gyro.reset();
   }
 
   @Override
