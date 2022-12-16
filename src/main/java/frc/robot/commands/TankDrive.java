@@ -4,77 +4,57 @@
 
 package frc.robot.commands;
 
-import java.util.function.DoubleSupplier;
+import java.util.function.Supplier;
 
 import edu.wpi.first.wpilibj2.command.CommandBase;
 import frc.robot.subsystems.Drivetrain;
 
 public class TankDrive extends CommandBase {
-
-  // SECTION[epic=Step3]: CREATING A FIELD
-  /* NOTE: Everything created here can be used anywhere in the file, so we need to make sure
-   * to create everything important here. For tankdrive, we need drivetrain (the mechanism),
-   * the input from the controllers for the leftWheel and rightWheel respectively. Make the
-   * input for the right wheel here.
-   */
+  // We put all the subsystems we are going to use here
   private final Drivetrain drivetrain;
-  private final DoubleSupplier leftWheelInput;
 
-  // !SECTION
-
-  // SECTION[epic=Step4]: CREATING SETUP CODE
-  /* NOTE: All your setup code for a command goes here. For tank drive it means getting controller input and saving it.
-   * The left controller input is done for you, please do the right controller input.
-   */
+  // We put all the fields we need for this command here
+  private final Supplier<Double> leftSpeed;
+  private final Supplier<Double> rightSpeed;
 
   /** Creates a new TankDrive. */
-  public TankDrive(DoubleSupplier leftInput) {
+  public TankDrive(Supplier<Double> leftSpeed, Supplier<Double> rightSpeed) {
+    // This is how to get all the subsystems
     this.drivetrain = Drivetrain.getInstance();
-    this.leftWheelInput = leftInput;
+
+    // We store our speed suppliers here
+    this.leftSpeed = leftSpeed;
+    this.rightSpeed = rightSpeed;
 
     // Use addRequirements() here to declare subsystem dependencies.
     addRequirements(drivetrain);
   }
 
-  // !SECTION
-
-
-  // SECTION[epic=Step5]
-  /* NOTE: This is the first thing that runs in a command. We want to set the motors to 0. Use the method you created in Drivetrain.java
-  called tankDrive() and set both motor speeds to 0. Place this in the curly braces.
-  */
+  // Called when the command is initially scheduled.
   @Override
   public void initialize() {
-    // drivetrain.<method name>(<inputs>)
+    // Start the motors at zero
+    drivetrain.tankDrive(0, 0);
   }
-  // !SECTION
 
-  // SECTION[epic=Step6]
-  /* NOTE: This is the code that will run repeatedly until the command ends. Set the motor speeds to what ever our input is.
-   * The one for the left motor is done for you.
-   */
+  // Called every time the scheduler runs while the command is scheduled.
   @Override
   public void execute() {
-    drivetrain.tankDrive(leftWheelInput.getAsDouble(), 0);
+    // Update the motors at each iteration using the suppliers
+    drivetrain.arcadeDrive(leftSpeed.get(), rightSpeed.get());
   }
 
-  // !SECTION
-
-  // SECTION[epic=Step7]
-  /* NOTE: This is the code that will run at the end of the command. Lets set the speed of the robot back to zero in here. */
+  // Called once the command ends or is interrupted.
   @Override
   public void end(boolean interrupted) {
-
+    // End by stopping the motors again
+    drivetrain.tankDrive(0, 0);
   }
-  // !SECTION
 
-  // SECTION[epic=Step8]
-  /*NOTE: This is where you write code to decide when the command is finished. Returning false means it will never be finished.
-  This works for us because we always want to be driving. You don't have to do anything here.
-  */
+  // Returns true when the command should end.
   @Override
   public boolean isFinished() {
+    // Never finishes
     return false;
   }
-  // !SECTION
 }
